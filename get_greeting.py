@@ -1,30 +1,32 @@
 #!/bin/python
 # -*- coding: utf-8 -*-
 import time
-import better_spoken_numbers as bsn
+import unicodedata
+
+month = {1: 'Janvier', 2: 'Fevrier', 3: 'Mars', 4: 'Avril', 5: 'Mai', 6: 'Juin', 7: 'Juillet', 8: 'Aout', 9: 'Septembre', 10: 'Octobre', 11: 'Novembre',
+         12: 'Decembre'}
+days = {0: 'Dimanche', 1: 'Lundi', 2: 'Mardi', 3: 'Mercredi', 4: 'Jeudi', 5: 'Vendredi', 6: 'Samedi'}
 
 from apcontent import alarmpi_content
 
 class greeting(alarmpi_content):
   def build(self):
-    day_of_month=str(bsn.d2w(int(time.strftime("%d"))))
-
-    now = time.strftime("%A %B ") + day_of_month + ',' + time.strftime(" %I %M %p")
+    now = days[int(time.strftime("%w"))] + " " + time.strftime("%d") + " " + month[int(time.strftime("%m"))] + ', il est ' + time.strftime(" %H:%M")
 
     if int(time.strftime("%H")) < 12:
-      period = 'morning'
+      period = 'Bonjour'
     if int(time.strftime("%H")) >= 12:
-      period = 'afternoon'
+      period = u'Bonne après-midi'.encode('utf8')
     if int(time.strftime("%H")) >= 17:
-      period = 'evening'
+      period = 'Bonsoir'
 
     # reads out good morning + my name
-    gmt = 'Good ' + period + ', '
+    gmt = period + ', '
 
-    # reads date and time 
-    day = ' it\'s ' + now + '.  '
+    # reads date and time
+    day = ' nous sommes le ' + now + '.  '
 
-    greeting = gmt + self.sconfig['name'] + day
+    greeting = gmt + self.sconfig['name'] + ", " + day
 
     if self.debug:
       print greeting

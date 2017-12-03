@@ -1,0 +1,9 @@
+## File-based project format:
+*.iws
+*.iml
+.idea/
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
