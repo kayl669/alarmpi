@@ -23,6 +23,12 @@ And see the details of each of the three parts.
 
 *optional packages* (not all commands will work in all environments):
 
+For Google calendar support:
+```shell
+pip install --upgrade google-api-python-client
+python google_calendar.py
+```
+
 For Ivona support:
 `sudo pip install pyvona`
 
@@ -64,7 +70,8 @@ First of all you need to open the file /etc/apt/sources.list and check it contai
 ```shell
 deb http://mirrordirector.raspbian.org/raspbian/ jessie main contrib non-free rpi
 # Uncomment line below then 'apt-get update' to enable 'apt-get source'
-deb-src http://archive.raspbian.org/raspbian/ jessie main contrib non-free rpi```
+deb-src http://archive.raspbian.org/raspbian/ jessie main contrib non-free rpi
+```
 
 Then as it says in the comment, do:
 
