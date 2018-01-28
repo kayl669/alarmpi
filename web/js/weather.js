@@ -75,6 +75,36 @@
         "962": '<i class="wi wi-cloudy-gusts"></i>', //
     };
 
+    let moonPhase = [
+        '<i class="wi wi-moon-new"></i>', //
+        '<i class="wi wi-moon-waxing-cresent-1"></i>', //
+        '<i class="wi wi-moon-waxing-cresent-2"></i>', //
+        '<i class="wi wi-moon-waxing-cresent-3"></i>', //
+        '<i class="wi wi-moon-waxing-cresent-4"></i>', //
+        '<i class="wi wi-moon-waxing-cresent-5"></i>', //
+        '<i class="wi wi-moon-waxing-cresent-6"></i>', //
+        '<i class="wi wi-moon-first-quarter"></i>', //
+        '<i class="wi wi-moon-waxing-gibbous-1"></i>', //
+        '<i class="wi wi-moon-waxing-gibbous-2"></i>', //
+        '<i class="wi wi-moon-waxing-gibbous-3"></i>', //
+        '<i class="wi wi-moon-waxing-gibbous-4"></i>', //
+        '<i class="wi wi-moon-waxing-gibbous-5"></i>', //
+        '<i class="wi wi-moon-waxing-gibbous-6"></i>', //
+        '<i class="wi wi-moon-full"></i>', //
+        '<i class="wi wi-moon-waning-gibbous-1"></i>', //
+        '<i class="wi wi-moon-waning-gibbous-2"></i>', //
+        '<i class="wi wi-moon-waning-gibbous-3"></i>', //
+        '<i class="wi wi-moon-waning-gibbous-4"></i>', //
+        '<i class="wi wi-moon-waning-gibbous-5"></i>', //
+        '<i class="wi wi-moon-waning-gibbous-6"></i>', //
+        '<i class="wi wi-moon-3rd-quarter"></i>', //
+        '<i class="wi wi-moon-waning-crescent-1"></i>', //
+        '<i class="wi wi-moon-waning-crescent-2"></i>', //
+        '<i class="wi wi-moon-waning-crescent-3"></i>', //
+        '<i class="wi wi-moon-waning-crescent-4"></i>', //
+        '<i class="wi wi-moon-waning-crescent-5"></i>', //
+        '<i class="wi wi-moon-waning-crescent-6"></i>'
+    ];
     'use strict';
     /*global $, moment*/
 
@@ -167,20 +197,11 @@
     function queryOpenWeathermap() {
         $.ajax({
             type:     'GET',
-            url:      'http://api.openweathermap.org/data/2.5/forecast?id=' + weatherId + '&lang=fr&units=metric&APPID=WEATHERAPIKEY',
+            url:      'http://api.openweathermap.org/data/2.5/forecast/daily?id=' + weatherId + '&lang=fr&units=metric&APPID=WEATHERAPIKEY',
             dataType: 'json'
         }).done(function(result) {
             // Drill down into the returned data to find the relevant weather information
-            for (let i = 0; i < 6; i++) {
-                let forecastCell;
-                if (i === 0) {
-                    forecastCell = "#currently ";
-                }
-                else {
-                    forecastCell = '#forecast' + i + ' ';
-                }
-                fillForecast(forecastCell, result.list[i]);
-            }
+            fillForecast("#currently ", result.list[0]);
         });
     }
 
@@ -205,13 +226,13 @@
             desc.html(forecast.weather[0].description);
         }
         if (temp.length) {
-            temp.html(resolveTemp(forecast.main.temp));
+            temp.html(resolveTemp(forecast.temp.day));
         }
         if (high.length) {
-            high.html(resolveTemp(forecast.main.temp_max));
+            high.html(resolveTemp(forecast.temp.max));
         }
         if (low.length) {
-            low.html(resolveTemp(forecast.main.temp_min));
+            low.html(resolveTemp(forecast.temp.min));
         }
     }
 
@@ -246,6 +267,77 @@
         }
     }
 
+    function queryLunopia() {
+        $.ajax({
+            type:        'GET',
+            url:         '/lunopia.php',
+            dataType:    'json',
+            crossDomain: true,
+            crossOrigin: "*"
+        }).done(function(result) {
+            let moonDiv = $("#moon");
+            let constellationDiv = $("#constellation");
+            let now = new Date();
+            let nowDay = now.getDate();
+            let distNewMoon = nowDay - result.NOUVELLELUNE[0].DATE.JOUR;
+            if (distNewMoon >= moonPhase.length || distNewMoon <= -moonPhase.length) {
+                distNewMoon = nowDay - result.NOUVELLELUNE[1].DATE.JOUR;
+            }
+            if (distNewMoon >= 0 && distNewMoon < moonPhase.length) {
+                let moonPhaseIcon = moonPhase[distNewMoon];
+                moonDiv.html(moonPhaseIcon);
+            }
+            else if (distNewMoon < 0 && distNewMoon > -moonPhase.length) {
+                let moonPhaseIcon = moonPhase[moonPhase.length + distNewMoon];
+                moonDiv.html(moonPhaseIcon);
+            }
+            let constellationName = result.CONSTELLATION[0].SIGNE;
+
+            for (let i = 0; i < result.CONSTELLATION.length; i++) {
+                if (result.CONSTELLATION[i].DATE.JOUR >= nowDay) {
+                    break;
+                }
+                constellationName = result.CONSTELLATION[i].SIGNE;
+            }
+            for (let i = 0; i < result.APOGEE.length; i++) {
+                if (result.APOGEE[i].DATE.JOUR == nowDay) {
+                    constellationName = "APOGEE";
+                }
+            }
+            for (let i = 0; i < result.PERIGEE.length; i++) {
+                if (result.PERIGEE[i].DATE.JOUR == nowDay) {
+                    constellationName = "PERIGEE";
+                }
+            }
+            for (let i = 0; i < result.NOEUD.length; i++) {
+                if (result.NOEUD[i].DATE.JOUR == nowDay) {
+                    constellationName = "NOEUD";
+                }
+            }
+
+            let image = "";
+            if (constellationName === "VERSEAU" || constellationName === "GEMEAUX" || constellationName === "BALANCE") {
+                image = "flower";
+            }
+            else if (constellationName === "SCORPION" || constellationName === "POISSONS" || constellationName === "CANCER") {
+                image = "leaf";
+            }
+            else if (constellationName === "VIERGE" || constellationName === "CAPRICORNE" || constellationName === "TAUREAU") {
+                image = "carrot";
+            }
+            else if (constellationName === "LION" || constellationName === "BELIER" || constellationName === "SAGITTAIRE") {
+                image = "pear";
+            }
+            else if (constellationName === "APOGEE" || constellationName === "PERIGEE" || constellationName === "NOEUD") {
+                image = "shovel";
+            }
+
+            if (image !== "") {
+                constellationDiv.html("<icon class='icon-" + image + "'></i>");
+            }
+        });
+    }
+
     $(window).on('load', function() {
         moment.locale('fr');
         refreshTime();
@@ -259,5 +351,10 @@
         setInterval(function() {
             queryOpenWeathermap();
         }, waitBetweenWeatherQueriesMS);
+
+        queryLunopia();
+        setInterval(function() {
+            queryLunopia();
+        }, 3600000);
     });
 }());
